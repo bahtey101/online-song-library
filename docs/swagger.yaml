@@ -1,0 +1,220 @@
+basePath: /songs
+definitions:
+  handler.CreateSong.Request:
+    properties:
+      group:
+        type: string
+      song:
+        type: string
+    type: object
+  handler.UpdateSong.Request:
+    properties:
+      group:
+        type: string
+      link:
+        type: string
+      releaseDate:
+        type: string
+      song:
+        type: string
+      text:
+        type: string
+    type: object
+  song.Song:
+    properties:
+      group:
+        type: string
+      id:
+        type: integer
+      link:
+        type: string
+      releaseDate:
+        type: string
+      song:
+        type: string
+      text:
+        items:
+          type: string
+        type: array
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Online song library on Go
+  license:
+    name: MIT
+    url: https://github.com/bahtey101/online-song-library/blob/main/LICENSE
+  termsOfService: http://swagger.io/terms/
+  title: Song library
+  version: 0.0.1
+paths:
+  /songs/:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a paginated list of songs based on optional query parameters.
+      parameters:
+      - description: Group name filter
+        in: query
+        name: group
+        type: string
+      - description: Song name filter
+        in: query
+        name: song
+        type: string
+      - description: Release date filter
+        in: query
+        name: releaseDate
+        type: string
+      - description: Page offset (default 1)
+        in: query
+        name: offset
+        type: integer
+      - description: Number of items per page (default 10, max 100)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/song.Song'
+            type: array
+        "500":
+          description: failed to fetch songs
+          schema:
+            type: string
+      summary: Get  paginated list of songs
+      tags:
+      - songs
+    post:
+      consumes:
+      - application/json
+      description: Add a new song to the system.
+      parameters:
+      - description: group name and song name
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateSong.Request'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            type: string
+        "400":
+          description: invalid request body
+          schema:
+            type: string
+        "500":
+          description: failed to create song
+          schema:
+            type: string
+      summary: Create a new song
+      tags:
+      - songs
+  /songs/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove a song from the system by ID.
+      parameters:
+      - description: Song ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+          schema:
+            type: string
+        "400":
+          description: invalid song ID
+          schema:
+            type: string
+        "500":
+          description: failed to delete song
+          schema:
+            type: string
+      summary: Delete a song
+      tags:
+      - songs
+    get:
+      consumes:
+      - application/json
+      description: Retrieve paginated text of a song by ID.
+      parameters:
+      - description: Song ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Page offset (default 1)
+        in: query
+        name: offset
+        type: integer
+      - description: Number of items per page (default 4, max 10)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: text
+          schema:
+            type: string
+        "400":
+          description: invalid song ID
+          schema:
+            type: string
+        "500":
+          description: failed to fetch text
+          schema:
+            type: string
+      summary: Get paginated song text
+      tags:
+      - songs
+    put:
+      consumes:
+      - application/json
+      description: Update the details of a song by ID.
+      parameters:
+      - description: Song ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: song fields
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/handler.UpdateSong.Request'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+          schema:
+            type: string
+        "400":
+          description: invalid request body
+          schema:
+            type: string
+        "500":
+          description: failed to update song
+          schema:
+            type: string
+      summary: Update an existing song
+      tags:
+      - songs
+swagger: "2.0"

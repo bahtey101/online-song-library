@@ -1,0 +1,333 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Online song library on Go",
+        "title": "Song library",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {},
+        "license": {
+            "name": "MIT",
+            "url": "https://github.com/bahtey101/online-song-library/blob/main/LICENSE"
+        },
+        "version": "0.0.1"
+    },
+    "host": "localhost:8080",
+    "basePath": "/songs",
+    "paths": {
+        "/songs/": {
+            "get": {
+                "description": "Retrieve a paginated list of songs based on optional query parameters.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "songs"
+                ],
+                "summary": "Get  paginated list of songs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Group name filter",
+                        "name": "group",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Song name filter",
+                        "name": "song",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Release date filter",
+                        "name": "releaseDate",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page offset (default 1)",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of items per page (default 10, max 100)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/song.Song"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "failed to fetch songs",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Add a new song to the system.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "songs"
+                ],
+                "summary": "Create a new song",
+                "parameters": [
+                    {
+                        "description": "group name and song name",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.CreateSong.Request"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid request body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "failed to create song",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/songs/{id}": {
+            "get": {
+                "description": "Retrieve paginated text of a song by ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "songs"
+                ],
+                "summary": "Get paginated song text",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Song ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page offset (default 1)",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of items per page (default 4, max 10)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "text",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid song ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "failed to fetch text",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update the details of a song by ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "songs"
+                ],
+                "summary": "Update an existing song",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Song ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "song fields",
+                        "name": "request",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/handler.UpdateSong.Request"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid request body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "failed to update song",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Remove a song from the system by ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "songs"
+                ],
+                "summary": "Delete a song",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Song ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid song ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "failed to delete song",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "handler.CreateSong.Request": {
+            "type": "object",
+            "properties": {
+                "group": {
+                    "type": "string"
+                },
+                "song": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.UpdateSong.Request": {
+            "type": "object",
+            "properties": {
+                "group": {
+                    "type": "string"
+                },
+                "link": {
+                    "type": "string"
+                },
+                "releaseDate": {
+                    "type": "string"
+                },
+                "song": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "song.Song": {
+            "type": "object",
+            "properties": {
+                "group": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "link": {
+                    "type": "string"
+                },
+                "releaseDate": {
+                    "type": "string"
+                },
+                "song": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}

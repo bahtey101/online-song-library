@@ -9,6 +9,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 type Handler struct {
@@ -26,6 +28,8 @@ func (handler *Handler) InitRoutes() *gin.Engine {
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	songs := router.Group("/songs")
 	{
 		songs.GET("/", handler.GetPaginatedSongs)
@@ -38,6 +42,20 @@ func (handler *Handler) InitRoutes() *gin.Engine {
 	return router
 }
 
+// GetPaginatedSongs godoc
+// @Summary Get  paginated list of songs
+// @Description  Retrieve a paginated list of songs based on optional query parameters.
+// @Tags         songs
+// @Accept       json
+// @Produce      json
+// @Param        group       query   string  false  "Group name filter"
+// @Param        song        query   string  false  "Song name filter"
+// @Param        releaseDate query   string  false  "Release date filter"
+// @Param        offset      query   int     false  "Page offset (default 1)"
+// @Param        limit       query   int     false  "Number of items per page (default 10, max 100)"
+// @Success      200 {array} song.Song
+// @Failure      500 {string} string "failed to fetch songs"
+// @Router       /songs/ [get]
 func (handler *Handler) GetPaginatedSongs(ctx *gin.Context) {
 	logrus.Debug("GetPaginatedSongs: received request")
 
@@ -87,6 +105,19 @@ func (handler *Handler) GetPaginatedSongs(ctx *gin.Context) {
 	})
 }
 
+// GetPaginatedText godoc
+// @Summary      Get paginated song text
+// @Description  Retrieve paginated text of a song by ID.
+// @Tags         songs
+// @Accept       json
+// @Produce      json
+// @Param        id     path   uint64  true   "Song ID"
+// @Param        offset query  int     false  "Page offset (default 1)"
+// @Param        limit  query  int     false  "Number of items per page (default 4, max 10)"
+// @Success      200 {string} string "text"
+// @Failure      400 {string} string "invalid song ID"
+// @Failure      500 {string} string "failed to fetch text"
+// @Router       /songs/{id} [get]
 func (handler *Handler) GetPaginatedText(ctx *gin.Context) {
 	logrus.Debug("GetPaginatedText: received request")
 
@@ -132,15 +163,27 @@ func (handler *Handler) GetPaginatedText(ctx *gin.Context) {
 	})
 }
 
+// CreateSong godoc
+// @Summary      Create a new song
+// @Description  Add a new song to the system.
+// @Tags         songs
+// @Accept       json
+// @Produce      json
+// @Param        request body handler.CreateSong.Request true "group name and song name"
+// @Success      201 {string} string "Created"
+// @Failure      400 {string} string "invalid request body"
+// @Failure      500 {string} string "failed to create song"
+// @Router       /songs/ [post]
 func (handler *Handler) CreateSong(ctx *gin.Context) {
 	logrus.Debug("CreateSong: received request")
 
-	var request struct {
+	type Request struct {
 		Group string `json:"group"`
 		Song  string `json:"song"`
 	}
+	var req Request
 
-	if err := ctx.BindJSON(&request); err != nil {
+	if err := ctx.BindJSON(&req); err != nil {
 		logrus.Error("CreateSong: invalid request body")
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": "invalid request body",
@@ -149,8 +192,8 @@ func (handler *Handler) CreateSong(ctx *gin.Context) {
 	}
 
 	if err := handler.service.CreateSong(ctx, msong.Song{
-		Group: request.Group,
-		Song:  request.Song,
+		Group: req.Group,
+		Song:  req.Song,
 	}); err != nil {
 		logrus.Errorf("CreateSong: failed to create song, error=%v", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{
@@ -163,18 +206,31 @@ func (handler *Handler) CreateSong(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, "")
 }
 
+// UpdateSong godoc
+// @Summary      Update an existing song
+// @Description  Update the details of a song by ID.
+// @Tags         songs
+// @Accept       json
+// @Produce      json
+// @Param        id          path uint64 true  "Song ID"
+// @Param        request body handler.UpdateSong.Request false "song fields"
+// @Success      204 {string} string "No content"
+// @Failure      400 {object} string "invalid request body"
+// @Failure      500 {object} string "failed to update song"
+// @Router       /songs/{id} [put]
 func (handler *Handler) UpdateSong(ctx *gin.Context) {
 	logrus.Debug("UpdateSong: received request")
 
-	var request struct {
+	type Request struct {
 		Group       string `json:"group"`
 		Song        string `json:"song"`
 		ReleaseDate string `json:"releaseDate"`
 		Text        string `json:"text"`
 		Link        string `json:"link"`
 	}
+	var req Request
 
-	if err := ctx.BindJSON(&request); err != nil {
+	if err := ctx.BindJSON(&req); err != nil {
 		logrus.Error("UpdateSong: invalid request body")
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": "invalid request body",
@@ -193,11 +249,11 @@ func (handler *Handler) UpdateSong(ctx *gin.Context) {
 
 	err = handler.service.UpdateSong(ctx, msong.Song{
 		ID:          id,
-		Group:       request.Group,
-		Song:        request.Song,
-		ReleaseDate: request.ReleaseDate,
-		Verses:      msong.SplitIntoVerses(request.Text),
-		Link:        request.Link,
+		Group:       req.Group,
+		Song:        req.Song,
+		ReleaseDate: req.ReleaseDate,
+		Verses:      msong.SplitIntoVerses(req.Text),
+		Link:        req.Link,
 	})
 	if err != nil {
 		logrus.Errorf("UpdateSong: failed to update song ID=%d, error=%v", id, err)
@@ -212,6 +268,17 @@ func (handler *Handler) UpdateSong(ctx *gin.Context) {
 	ctx.JSON(http.StatusNoContent, "")
 }
 
+// DeleteSong godoc
+// @Summary      Delete a song
+// @Description  Remove a song from the system by ID.
+// @Tags         songs
+// @Accept       json
+// @Produce      json
+// @Param        id   path   uint64  true   "Song ID"
+// @Success      204 {string} string "No content"
+// @Failure      400 {string} string "invalid song ID"
+// @Failure      500 {string} string "failed to delete song"
+// @Router       /songs/{id} [delete]
 func (handler *Handler) DeleteSong(ctx *gin.Context) {
 	logrus.Debug("DeleteSong: received request")
 

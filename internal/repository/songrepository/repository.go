@@ -26,7 +26,7 @@ func (sr *SongRepository) GetPaginatedSongs(
 	sql := fmt.Sprintf(`
 	select
 		id,
-		group,
+		"group",
 		song,
 		release_date,
 		link
@@ -134,7 +134,7 @@ func (sr *SongRepository) Update(ctx context.Context, song msong.Song) error {
 	update
 		songs
 	set
-		group = $1,
+		"group" = $1,
 		song = $2,
 		release_date = $3,
 		text = $4,
@@ -160,7 +160,7 @@ func (sr *SongRepository) Update(ctx context.Context, song msong.Song) error {
 func (sr *SongRepository) Create(ctx context.Context, song msong.Song) error {
 	const sql = `
 	insert into songs(
-		group,
+		"group",
 		song,
 		release_date,
 		text,
