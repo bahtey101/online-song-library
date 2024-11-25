@@ -23,7 +23,6 @@ func (sr *SongRepository) GetPaginatedSongs(
 	fields map[string]string,
 	offset, limit int,
 ) (*[]msong.Song, error) {
-
 	sql := fmt.Sprintf(`
 	select
 		id,
@@ -44,11 +43,13 @@ func (sr *SongRepository) GetPaginatedSongs(
 
 		filter := ""
 		for k, v := range fields {
-			if len(filter) > 0 {
+			if filter != "" {
 				filter += " and "
 			}
+
 			filter += fmt.Sprintf("%s=%s", k, v)
 		}
+
 		return filter
 	}())
 
@@ -75,11 +76,11 @@ func (sr *SongRepository) GetPaginatedSongs(
 		); err != nil {
 			return nil, err
 		}
+
 		songs = append(songs, song)
 	}
 
 	return &songs, nil
-
 }
 
 func (sr *SongRepository) GetPaginatedText(
@@ -116,6 +117,7 @@ func (sr *SongRepository) Delete(ctx context.Context, song msong.Song) error {
 	delete from songs
 	where id = $1;
 	`
+
 	if _, err := sr.store.Exec(
 		ctx,
 		sql,

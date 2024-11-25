@@ -37,8 +37,8 @@ func (c *Client) GetSongInfo(song msong.Song) (map[string]string, error) {
 		Text        string `json:"text"`
 		Link        string `json:"link"`
 	}
-	query := c.ReqURL.Query()
 
+	query := c.ReqURL.Query()
 	query.Set("group", song.Group)
 	query.Set("song", song.Song)
 	c.ReqURL.RawQuery = query.Encode()

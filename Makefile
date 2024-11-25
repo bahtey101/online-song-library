@@ -3,7 +3,7 @@ PROJECTNAME = song-library
 
 .PHONY: lint
 lint:
-	golangci-lint run  --config=.golangci.yaml --timeout=180s ./...
+	golangci-lint run  --config=.golangci.yml --timeout=180s ./...
 
 
 .PHONY: generate
@@ -22,5 +22,5 @@ build:
 
 .PHONY: run
 run:
-	go run ./cmd/${PROJECTNAME}/...
+	go run ./cmd/${PROJECTNAME}/main.go
 

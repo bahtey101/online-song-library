@@ -43,22 +43,25 @@ func Run(cfg *config.Config) error {
 
 	go func() {
 		logrus.Infof("Starting HTTP server on port %s", cfg.Port)
-		if err := server.ListenAndServe(); err != nil {
+
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			logrus.Fatalf("Error service http server %v", err)
 		}
 	}()
 
-	gracefulShotdown(server, ctx, cancel)
+	gracefulShotdown(ctx, server, cancel)
 
 	return nil
 }
 
-func gracefulShotdown(s *http.Server, ctx context.Context, cancel context.CancelFunc) {
+func gracefulShotdown(ctx context.Context, s *http.Server, cancel context.CancelFunc) {
 	const waitTime = 5 * time.Second // waiting time before closing all connections
 
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+
 	defer signal.Stop(ch)
+
 	sig := <-ch
 	logrus.Infof("Received shutdown signal: %v. Initiating graceful shutdown...", sig)
 
